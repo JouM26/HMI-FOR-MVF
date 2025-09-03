@@ -1,0 +1,12 @@
+user_="admin"
+pwd_="123"
+print("bienvenido ingrese sus datos")
+print("usuario")
+user=input()
+print("contraseña")
+pwd=input()
+if user==user_ and pwd==pwd_:
+    print("acceso concedido")
+else:
+    print("acceso denegado")
+    
