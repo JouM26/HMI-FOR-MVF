@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLineEdit, QPushButton,
-    QLabel, QVBoxLayout, QMessageBox
+    QLabel, QVBoxLayout, QMessageBox, QHBoxLayout, QGroupBox
 )
 import smtplib
 from email.mime.text import MIMEText
@@ -22,15 +22,28 @@ app_flask = Flask(__name__)
 HTML_FORM = """
 <!DOCTYPE html>
 <html>
-<head><title>Restablecer Contraseña</title></head>
+<head>
+    <title>Restablecer Contraseña</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f0f4f8; }
+        .container { background: #fff; padding: 30px; border-radius: 10px; max-width: 350px; margin: 60px auto; box-shadow: 0 2px 8px #bbb; }
+        h2 { color: #1976d2; }
+        input[type=password], input[type=submit] { width: 100%; padding: 8px; margin: 8px 0; border-radius: 5px; border: 1px solid #b0b0b0; }
+        input[type=submit] { background: #1976d2; color: #fff; border: none; font-weight: bold; cursor: pointer; }
+        input[type=submit]:hover { background: #1565c0; }
+        p { color: #d32f2f; }
+    </style>
+</head>
 <body>
-    <h2>Restablecer Contraseña para {{ user }}</h2>
-    <form method="post">
-      Nueva contraseña: <input type="password" name="new_pass"><br>
-      Confirmar contraseña: <input type="password" name="confirm_pass"><br>
-      <input type="submit" value="Restablecer">
-    </form>
-    <p style="color:red;">{{ msg }}</p>
+    <div class="container">
+        <h2>Restablecer Contraseña para {{ user }}</h2>
+        <form method="post">
+          Nueva contraseña: <input type="password" name="new_pass"><br>
+          Confirmar contraseña: <input type="password" name="confirm_pass"><br>
+          <input type="submit" value="Restablecer">
+        </form>
+        <p>{{ msg }}</p>
+    </div>
 </body>
 </html>
 """
@@ -56,16 +69,53 @@ def reset():
 def run_flask():
     app_flask.run(port=5000, debug=False, use_reloader=False)
 
-# --- Ventana Bienvenida ---
+# --- Ventana Bienvenida / HMI ---
 class WelcomeWindow(QMainWindow):
     def __init__(self, username):
         super().__init__()
-        self.setWindowTitle("Bienvenido")
-        self.setGeometry(450, 250, 350, 120)
-        label = QLabel(f"Bienvenido: {username}")
-        label.setStyleSheet("font-size: 18px;")
+        self.setWindowTitle("HMI - Inspección de Módulos Fotovoltaicos")
+        self.setGeometry(400, 200, 500, 350)
+        self.setStyleSheet("""
+            QWidget { background-color: #f0f4f8; font-family: Arial; font-size: 15px; }
+            QLabel#titulo { font-size: 22px; color: #1976d2; font-weight: bold; }
+            QLabel#usuario { font-size: 16px; color: #333; }
+            QPushButton { background-color: #1976d2; color: white; border-radius: 6px; padding: 10px; font-weight: bold; }
+            QPushButton:hover { background-color: #1565c0; }
+            QGroupBox { border: 2px solid #1976d2; border-radius: 8px; margin-top: 10px; }
+            QGroupBox:title { subcontrol-origin: margin; left: 10px; padding: 0 3px 0 3px; }
+        """)
+
         layout = QVBoxLayout()
-        layout.addWidget(label)
+
+        titulo = QLabel("HMI - Máquina de Inspección de Módulos Fotovoltaicos")
+        titulo.setObjectName("titulo")
+        layout.addWidget(titulo)
+
+        usuario = QLabel(f"Bienvenido: {username}")
+        usuario.setObjectName("usuario")
+        layout.addWidget(usuario)
+
+        # Simulación de comandos HMI
+        comandos = QGroupBox("Comandos de la Máquina")
+        comandos_layout = QHBoxLayout()
+        btn_iniciar = QPushButton("Iniciar Inspección")
+        btn_detener = QPushButton("Detener")
+        btn_reset = QPushButton("Resetear Máquina")
+        comandos_layout.addWidget(btn_iniciar)
+        comandos_layout.addWidget(btn_detener)
+        comandos_layout.addWidget(btn_reset)
+        comandos.setLayout(comandos_layout)
+        layout.addWidget(comandos)
+
+        # Estado simulado
+        self.estado_label = QLabel("Estado: En espera")
+        layout.addWidget(self.estado_label)
+
+        # Acciones de los botones
+        btn_iniciar.clicked.connect(lambda: self.estado_label.setText("Estado: Inspección en curso"))
+        btn_detener.clicked.connect(lambda: self.estado_label.setText("Estado: Detenida"))
+        btn_reset.clicked.connect(lambda: self.estado_label.setText("Estado: Máquina reseteada"))
+
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
@@ -75,7 +125,14 @@ class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("HMI - Iniciar Sesión")
-        self.setGeometry(400, 200, 350, 200)
+        self.setGeometry(400, 200, 350, 250)
+        self.setStyleSheet("""
+            QWidget { background-color: #f0f4f8; font-family: Arial; font-size: 14px; }
+            QLineEdit { border: 1px solid #b0b0b0; border-radius: 6px; padding: 6px; background: #fff; }
+            QPushButton { background-color: #1976d2; color: white; border-radius: 6px; padding: 8px; font-weight: bold; }
+            QPushButton:hover { background-color: #1565c0; }
+            QLabel { color: #333; }
+        """)
 
         # Widgets
         self.user_input = QLineEdit()
@@ -131,6 +188,13 @@ class RecoverPasswordWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Recuperar Contraseña")
         self.setGeometry(450, 250, 350, 150)
+        self.setStyleSheet("""
+            QWidget { background-color: #f0f4f8; font-family: Arial; font-size: 14px; }
+            QLineEdit { border: 1px solid #b0b0b0; border-radius: 6px; padding: 6px; background: #fff; }
+            QPushButton { background-color: #1976d2; color: white; border-radius: 6px; padding: 8px; font-weight: bold; }
+            QPushButton:hover { background-color: #1565c0; }
+            QLabel { color: #333; }
+        """)
 
         self.email_input = QLineEdit()
         self.email_input.setPlaceholderText("Correo registrado")
@@ -158,9 +222,9 @@ class RecoverPasswordWindow(QMainWindow):
                 try:
                     enlace = f"http://localhost:5000/reset?token={token}"
                     msg = MIMEText(
-                        f"Haz clic en este enlace para restablecer tu contraseña: {enlace}"
+                        f"Haz clic en este enlace para restablecer tu contraseña para la HMI de inspección de módulos fotovoltaicos:\n\n{enlace}\n\nSi no solicitaste este cambio, ignora este mensaje."
                     )
-                    msg["Subject"] = "Recuperación de contraseña HMI"
+                    msg["Subject"] = "Recuperación de contraseña HMI - Inspección Fotovoltaica"
                     msg["From"] = GMAIL_USER
                     msg["To"] = email
 
