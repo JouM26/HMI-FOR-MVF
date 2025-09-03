@@ -1,12 +1,187 @@
-user_="admin"
-pwd_="123"
-print("bienvenido ingrese sus datos")
-print("usuario")
-user=input()
-print("contraseña")
-pwd=input()
-if user==user_ and pwd==pwd_:
-    print("acceso concedido")
-else:
-    print("acceso denegado")
-    
+import sys
+from PyQt5.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QLineEdit, QPushButton,
+    QLabel, QVBoxLayout, QMessageBox
+)
+import smtplib
+from email.mime.text import MIMEText
+from flask import Flask, request, render_template_string
+import threading
+
+# --- Configuración de correo ---
+GMAIL_USER = "pruebatesis2025@gmail.com"
+GMAIL_APP_PASSWORD = "mqof mmjq dqdw rjvu"  # Reemplaza por tu contraseña de aplicación
+
+# --- Simulación de usuarios ---
+USERS = {"JOU": {"password": "12345", "email": "pruebatesis2025@gmail.com"}}
+RESET_TOKENS = {}
+
+# --- Servidor Flask para restablecimiento desde el email ---
+app_flask = Flask(__name__)
+
+HTML_FORM = """
+<!DOCTYPE html>
+<html>
+<head><title>Restablecer Contraseña</title></head>
+<body>
+    <h2>Restablecer Contraseña para {{ user }}</h2>
+    <form method="post">
+      Nueva contraseña: <input type="password" name="new_pass"><br>
+      Confirmar contraseña: <input type="password" name="confirm_pass"><br>
+      <input type="submit" value="Restablecer">
+    </form>
+    <p style="color:red;">{{ msg }}</p>
+</body>
+</html>
+"""
+
+@app_flask.route("/reset", methods=["GET", "POST"])
+def reset():
+    token = request.args.get("token")
+    user = RESET_TOKENS.get(token)
+    msg = ""
+    if not user:
+        msg = "Token inválido o expirado."
+        return render_template_string(HTML_FORM, user="desconocido", msg=msg)
+    if request.method == "POST":
+        new_pass = request.form["new_pass"]
+        confirm_pass = request.form["confirm_pass"]
+        if not new_pass or new_pass != confirm_pass:
+            msg = "Las contraseñas no coinciden o están vacías."
+        else:
+            USERS[user]["password"] = new_pass
+            msg = "Contraseña restablecida correctamente. Ya puedes cerrar esta ventana y volver a la aplicación."
+    return render_template_string(HTML_FORM, user=user, msg=msg)
+
+def run_flask():
+    app_flask.run(port=5000, debug=False, use_reloader=False)
+
+# --- Ventana Bienvenida ---
+class WelcomeWindow(QMainWindow):
+    def __init__(self, username):
+        super().__init__()
+        self.setWindowTitle("Bienvenido")
+        self.setGeometry(450, 250, 350, 120)
+        label = QLabel(f"Bienvenido: {username}")
+        label.setStyleSheet("font-size: 18px;")
+        layout = QVBoxLayout()
+        layout.addWidget(label)
+        container = QWidget()
+        container.setLayout(layout)
+        self.setCentralWidget(container)
+
+# --- Ventana Login ---
+class LoginWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("HMI - Iniciar Sesión")
+        self.setGeometry(400, 200, 350, 200)
+
+        # Widgets
+        self.user_input = QLineEdit()
+        self.user_input.setPlaceholderText("Usuario")
+
+        self.pass_input = QLineEdit()
+        self.pass_input.setPlaceholderText("Contraseña")
+        self.pass_input.setEchoMode(QLineEdit.Password)
+
+        self.login_btn = QPushButton("Iniciar Sesión")
+        self.recover_btn = QPushButton("Recuperar Contraseña")
+        self.msg_label = QLabel("")
+
+        # Layout
+        layout = QVBoxLayout()
+        layout.addWidget(self.user_input)
+        layout.addWidget(self.pass_input)
+        layout.addWidget(self.login_btn)
+        layout.addWidget(self.recover_btn)
+        layout.addWidget(self.msg_label)
+
+        container = QWidget()
+        container.setLayout(layout)
+        self.setCentralWidget(container)
+
+        # Eventos
+        self.login_btn.clicked.connect(self.validate_login)
+        self.recover_btn.clicked.connect(self.open_recover)
+
+    def validate_login(self):
+        u = self.user_input.text()
+        p = self.pass_input.text()
+        if u in USERS and USERS[u]["password"] == p:
+            QMessageBox.information(self, "Éxito", "Login correcto")
+            self.user_input.clear()
+            self.pass_input.clear()
+            self.msg_label.clear()
+            self.close()
+            self.welcome = WelcomeWindow(u)
+            self.welcome.show()
+        else:
+            self.msg_label.setText("Error: credenciales inválidas")
+            self.user_input.clear()
+            self.pass_input.clear()
+
+    def open_recover(self):
+        self.recover = RecoverPasswordWindow()
+        self.recover.show()
+
+# --- Ventana Recuperar Contraseña ---
+class RecoverPasswordWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Recuperar Contraseña")
+        self.setGeometry(450, 250, 350, 150)
+
+        self.email_input = QLineEdit()
+        self.email_input.setPlaceholderText("Correo registrado")
+        self.send_btn = QPushButton("Enviar enlace")
+        self.msg_label = QLabel("")
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.email_input)
+        layout.addWidget(self.send_btn)
+        layout.addWidget(self.msg_label)
+
+        container = QWidget()
+        container.setLayout(layout)
+        self.setCentralWidget(container)
+
+        self.send_btn.clicked.connect(self.send_email)
+
+    def send_email(self):
+        email = self.email_input.text()
+        for user, data in USERS.items():
+            if data["email"] == email:
+                token = user + "_token"
+                RESET_TOKENS[token] = user
+                # Enviar correo real con enlace a Flask
+                try:
+                    enlace = f"http://localhost:5000/reset?token={token}"
+                    msg = MIMEText(
+                        f"Haz clic en este enlace para restablecer tu contraseña: {enlace}"
+                    )
+                    msg["Subject"] = "Recuperación de contraseña HMI"
+                    msg["From"] = GMAIL_USER
+                    msg["To"] = email
+
+                    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+                        server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
+                        server.sendmail(GMAIL_USER, [email], msg.as_string())
+
+                    QMessageBox.information(self, "Recuperación", "Se envió un enlace de recuperación a tu correo.")
+                except Exception as e:
+                    QMessageBox.warning(self, "Error", f"No se pudo enviar el correo: {e}")
+                self.close()
+                return
+        self.msg_label.setText("Correo no registrado.")
+
+# --- Ejecutar aplicación ---
+if __name__ == "__main__":
+    # Iniciar Flask en un hilo aparte
+    flask_thread = threading.Thread(target=run_flask, daemon=True)
+    flask_thread.start()
+
+    app = QApplication(sys.argv)
+    window = LoginWindow()
+    window.show()
+    sys.exit(app.exec_())
