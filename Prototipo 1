@@ -1,7 +1,8 @@
 import sys
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLineEdit, QPushButton,
-    QLabel, QVBoxLayout, QMessageBox, QHBoxLayout, QGroupBox
+    QLabel, QVBoxLayout, QMessageBox, QHBoxLayout, QGroupBox,
+    QListWidget, QStackedWidget
 )
 import smtplib
 from email.mime.text import MIMEText
@@ -15,6 +16,29 @@ GMAIL_APP_PASSWORD = "mqof mmjq dqdw rjvu"  # Reemplaza por tu contraseña de ap
 # --- Simulación de usuarios ---
 USERS = {"JOU": {"password": "12345", "email": "pruebatesis2025@gmail.com"}}
 RESET_TOKENS = {}
+
+# --- Simulación de la máquina ---
+class MaquinaInspeccion:
+    def __init__(self):
+        self.estado = "En espera"
+        self.objeto_actual = None
+        self.resultado = ""
+        self.alarmas = []
+
+    def iniciar_inspeccion(self, objeto):
+        self.estado = "Inspección en curso"
+        self.objeto_actual = objeto
+        self.resultado = "OK"  # Simulación
+        self.alarmas.clear()
+
+    def detener(self):
+        self.estado = "Detenida"
+
+    def resetear(self):
+        self.estado = "Máquina reseteada"
+        self.objeto_actual = None
+        self.resultado = ""
+        self.alarmas.clear()
 
 # --- Servidor Flask para restablecimiento desde el email ---
 app_flask = Flask(__name__)
@@ -69,34 +93,86 @@ def reset():
 def run_flask():
     app_flask.run(port=5000, debug=False, use_reloader=False)
 
-# --- Ventana Bienvenida / HMI ---
-class WelcomeWindow(QMainWindow):
-    def __init__(self, username):
+# --- Ventana principal tipo wireframe ---
+class MainHMIWindow(QMainWindow):
+    def __init__(self, username, maquina):
         super().__init__()
         self.setWindowTitle("HMI - Inspección de Módulos Fotovoltaicos")
-        self.setGeometry(400, 200, 500, 350)
-        self.setStyleSheet("""
-            QWidget { background-color: #f0f4f8; font-family: Arial; font-size: 15px; }
-            QLabel#titulo { font-size: 22px; color: #1976d2; font-weight: bold; }
-            QLabel#usuario { font-size: 16px; color: #333; }
-            QPushButton { background-color: #1976d2; color: white; border-radius: 6px; padding: 10px; font-weight: bold; }
-            QPushButton:hover { background-color: #1565c0; }
-            QGroupBox { border: 2px solid #1976d2; border-radius: 8px; margin-top: 10px; }
-            QGroupBox:title { subcontrol-origin: margin; left: 10px; padding: 0 3px 0 3px; }
-        """)
+        self.setGeometry(300, 100, 800, 500)
+        self.maquina = maquina
+        self.username = username
 
+        # Menú lateral
+        self.menu = QListWidget()
+        self.menu.addItems(["Inicio", "Detalles", "Verificación de Estado", "Control Manual"])
+        self.menu.setFixedWidth(180)
+        self.menu.currentRowChanged.connect(self.cambiar_pantalla)
+
+        # StackedWidget para cambiar de pantalla
+        self.stacked = QStackedWidget()
+        self.stacked.addWidget(self.pantalla_inicio())
+        self.stacked.addWidget(self.pantalla_detalles())
+        self.stacked.addWidget(self.pantalla_verificacion())
+        self.stacked.addWidget(self.pantalla_control())
+
+        # Layout principal
+        main_layout = QHBoxLayout()
+        main_layout.addWidget(self.menu)
+        main_layout.addWidget(self.stacked)
+
+        container = QWidget()
+        container.setLayout(main_layout)
+        self.setCentralWidget(container)
+
+        # Selecciona la pantalla de inicio por defecto
+        self.menu.setCurrentRow(0)
+
+    def pantalla_inicio(self):
+        widget = QWidget()
         layout = QVBoxLayout()
-
         titulo = QLabel("HMI - Máquina de Inspección de Módulos Fotovoltaicos")
-        titulo.setObjectName("titulo")
+        titulo.setStyleSheet("font-size: 22px; color: #1976d2; font-weight: bold;")
+        usuario = QLabel(f"Bienvenido: {self.username}")
+        usuario.setStyleSheet("font-size: 16px; color: #333;")
         layout.addWidget(titulo)
-
-        usuario = QLabel(f"Bienvenido: {username}")
-        usuario.setObjectName("usuario")
         layout.addWidget(usuario)
+        layout.addStretch()
+        widget.setLayout(layout)
+        return widget
 
-        # Simulación de comandos HMI
-        comandos = QGroupBox("Comandos de la Máquina")
+    def pantalla_detalles(self):
+        widget = QWidget()
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel("Detalles del objeto inspeccionado:"))
+        self.objeto_label = QLabel(f"Objeto actual: {self.maquina.objeto_actual or 'Ninguno'}")
+        self.resultado_label = QLabel(f"Resultado: {self.maquina.resultado or '-'}")
+        layout.addWidget(self.objeto_label)
+        layout.addWidget(self.resultado_label)
+        layout.addStretch()
+        widget.setLayout(layout)
+        return widget
+
+    def pantalla_verificacion(self):
+        widget = QWidget()
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel("Verificación de Estado de la Máquina:"))
+        self.estado_label = QLabel(f"Estado: {self.maquina.estado}")
+        layout.addWidget(self.estado_label)
+        if self.maquina.alarmas:
+            alarmas = "\n".join(self.maquina.alarmas)
+        else:
+            alarmas = "Sin alarmas"
+        self.alarmas_label = QLabel(f"Alarmas: {alarmas}")
+        layout.addWidget(self.alarmas_label)
+        layout.addStretch()
+        widget.setLayout(layout)
+        return widget
+
+    def pantalla_control(self):
+        widget = QWidget()
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel("Control Manual de la Máquina:"))
+        comandos = QGroupBox("Comandos")
         comandos_layout = QHBoxLayout()
         btn_iniciar = QPushButton("Iniciar Inspección")
         btn_detener = QPushButton("Detener")
@@ -106,19 +182,39 @@ class WelcomeWindow(QMainWindow):
         comandos_layout.addWidget(btn_reset)
         comandos.setLayout(comandos_layout)
         layout.addWidget(comandos)
+        layout.addStretch()
+        widget.setLayout(layout)
 
-        # Estado simulado
-        self.estado_label = QLabel("Estado: En espera")
-        layout.addWidget(self.estado_label)
+        btn_iniciar.clicked.connect(self.iniciar_inspeccion)
+        btn_detener.clicked.connect(self.detener)
+        btn_reset.clicked.connect(self.resetear)
+        return widget
 
-        # Acciones de los botones
-        btn_iniciar.clicked.connect(lambda: self.estado_label.setText("Estado: Inspección en curso"))
-        btn_detener.clicked.connect(lambda: self.estado_label.setText("Estado: Detenida"))
-        btn_reset.clicked.connect(lambda: self.estado_label.setText("Estado: Máquina reseteada"))
+    def cambiar_pantalla(self, index):
+        # Actualiza los datos en cada pantalla al cambiar
+        if index == 1:  # Detalles
+            self.objeto_label.setText(f"Objeto actual: {self.maquina.objeto_actual or 'Ninguno'}")
+            self.resultado_label.setText(f"Resultado: {self.maquina.resultado or '-'}")
+        elif index == 2:  # Verificación
+            self.estado_label.setText(f"Estado: {self.maquina.estado}")
+            if self.maquina.alarmas:
+                alarmas = "\n".join(self.maquina.alarmas)
+            else:
+                alarmas = "Sin alarmas"
+            self.alarmas_label.setText(f"Alarmas: {alarmas}")
+        self.stacked.setCurrentIndex(index)
 
-        container = QWidget()
-        container.setLayout(layout)
-        self.setCentralWidget(container)
+    def iniciar_inspeccion(self):
+        self.maquina.iniciar_inspeccion("Módulo FV A")
+        self.cambiar_pantalla(self.menu.currentRow())
+
+    def detener(self):
+        self.maquina.detener()
+        self.cambiar_pantalla(self.menu.currentRow())
+
+    def resetear(self):
+        self.maquina.resetear()
+        self.cambiar_pantalla(self.menu.currentRow())
 
 # --- Ventana Login ---
 class LoginWindow(QMainWindow):
@@ -162,6 +258,9 @@ class LoginWindow(QMainWindow):
         self.login_btn.clicked.connect(self.validate_login)
         self.recover_btn.clicked.connect(self.open_recover)
 
+        # Instancia de la máquina
+        self.maquina = MaquinaInspeccion()
+
     def validate_login(self):
         u = self.user_input.text()
         p = self.pass_input.text()
@@ -171,8 +270,8 @@ class LoginWindow(QMainWindow):
             self.pass_input.clear()
             self.msg_label.clear()
             self.close()
-            self.welcome = WelcomeWindow(u)
-            self.welcome.show()
+            self.mainhmi = MainHMIWindow(u, self.maquina)
+            self.mainhmi.show()
         else:
             self.msg_label.setText("Error: credenciales inválidas")
             self.user_input.clear()
