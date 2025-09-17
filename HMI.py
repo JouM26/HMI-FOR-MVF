@@ -1,9 +1,9 @@
+# -*- coding: utf-8 -*-
 from PyQt5.QtWidgets import QApplication
+from GUI.Login import Login
 
-class HMI():
+class HMI:
     def __init__(self):
         self.app = QApplication([])
-        from GUI.Login import Login
         self.login = Login()
-        
-        self.app.exec_()
+        self.app.exec()
