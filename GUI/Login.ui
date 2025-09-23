@@ -39,8 +39,8 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>90</x>
-      <y>120</y>
+      <x>100</x>
+      <y>100</y>
       <width>181</width>
       <height>21</height>
      </rect>
@@ -67,7 +67,7 @@ text-transform: uppercase;</string>
     <property name="geometry">
      <rect>
       <x>170</x>
-      <y>160</y>
+      <y>130</y>
       <width>151</width>
       <height>21</height>
      </rect>
@@ -87,7 +87,7 @@ text-transform: uppercase;</string>
     <property name="geometry">
      <rect>
       <x>170</x>
-      <y>220</y>
+      <y>190</y>
       <width>181</width>
       <height>20</height>
      </rect>
@@ -107,7 +107,7 @@ text-transform: uppercase;</string>
     <property name="geometry">
      <rect>
       <x>170</x>
-      <y>190</y>
+      <y>160</y>
       <width>171</width>
       <height>21</height>
      </rect>
@@ -125,7 +125,7 @@ text-transform: uppercase;</string>
     <property name="geometry">
      <rect>
       <x>170</x>
-      <y>250</y>
+      <y>220</y>
       <width>171</width>
       <height>21</height>
      </rect>
@@ -146,9 +146,9 @@ text-transform: uppercase;</string>
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>280</y>
+      <y>260</y>
       <width>151</width>
-      <height>23</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="font">
@@ -167,7 +167,8 @@ color: rgb(255, 255, 255);
 border-radius:8px;</string>
     </property>
     <property name="text">
-     <string>INGRESAR/LOG IN</string>
+     <string>INGRESAR 
+LOG IN</string>
     </property>
    </widget>
    <widget class="QLabel" name="lblMensaje">
@@ -192,7 +193,7 @@ border-radius:8px;</string>
    <widget class="QPushButton" name="btnRestablecer">
     <property name="geometry">
      <rect>
-      <x>190</x>
+      <x>210</x>
       <y>310</y>
       <width>131</width>
       <height>23</height>
@@ -213,7 +214,7 @@ border-radius:1px;</string>
     <property name="geometry">
      <rect>
       <x>70</x>
-      <y>200</y>
+      <y>170</y>
       <width>91</width>
       <height>71</height>
      </rect>

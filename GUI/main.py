@@ -1,6 +1,6 @@
 from PyQt5 import uic
 from PyQt5.QtWidgets import QMessageBox
-from GUI.ventanas_secundarias import VentanaDetalle, VentanaControlManual, VentanaInicio
+from GUI.ventanas_secundarias import VentanaDetalle, VentanaControlManual, VentanaInicio, VentanaPruebasManuales
 
 class MainWindow:
     def __init__(self, nombre="", apellido="", usuario=""):
@@ -16,6 +16,7 @@ class MainWindow:
         self.main.btnDetalle.clicked.connect(self.abrir_detalle)
         self.main.btnControl_Manual.clicked.connect(self.abrir_control_manual)
         self.main.btnInicio.clicked.connect(self.abrir_inicio)
+        self.main.btnSalir.clicked.connect(self.salir_usuario)  # <--- Aquí
 
         # Inicializar luces indicadoras en rojo (apagadas)
         self.set_led_color(self.main.lblIndicadorMaquina, False)
@@ -50,14 +51,26 @@ class MainWindow:
             """)
 
     def abrir_detalle(self):
-        dlg = VentanaDetalle(self.main)
-        dlg.exec_()
+        self.ventana_detalle = VentanaDetalle(self.main)
+        self.main.hide()
+        self.ventana_detalle.show()
 
     def abrir_control_manual(self):
-        dlg = VentanaControlManual(self.main)
-        dlg.exec_()
+        self.ventana_control_manual = VentanaControlManual(self.main)
+        self.main.hide()
+        self.ventana_control_manual.show()
 
     def abrir_inicio(self):
         dlg = VentanaInicio(self.main)
         dlg.exec_()
+
+    def prueba_manual(self):
+        self.ventana_pruebas = VentanaPruebasManuales(self)
+        self.hide()
+        self.ventana_pruebas.show()
+
+    def salir_usuario(self):
+        from GUI.Login import Login  # Importa aquí, no arriba
+        self.main.close()
+        self.login = Login()
 

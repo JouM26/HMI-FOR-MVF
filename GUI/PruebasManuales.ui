@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FormPruebas</class>
+ <widget class="QDialog" name="FormPruebas">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>488</width>
+    <height>345</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Pruebas Manuales</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+    stop:0 #4fc3f7, stop:1 #1976d2);</string>
+  </property>
+  <widget class="QPushButton" name="bntT">
+   <property name="geometry">
+    <rect>
+     <x>60</x>
+     <y>70</y>
+     <width>181</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <property name="cursor">
+    <cursorShape>OpenHandCursor</cursorShape>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: #2176ae;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    border-radius: 14px;
+    padding: 18px 10px 8px 10px;
+    border: none;</string>
+   </property>
+   <property name="text">
+    <string>ENSAYO
+TERMOGRAFÍA 
+Termography Test</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="bntAE">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>70</y>
+     <width>171</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <property name="cursor">
+    <cursorShape>OpenHandCursor</cursorShape>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: #2176ae;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    border-radius: 14px;
+    padding: 18px 10px 8px 10px;
+    border: none;</string>
+   </property>
+   <property name="text">
+    <string>ENSAYO AISLACIÓN 
+ELECTRICA
+Electrical Insulation 
+Test</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="bntEL">
+   <property name="geometry">
+    <rect>
+     <x>60</x>
+     <y>180</y>
+     <width>181</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <property name="cursor">
+    <cursorShape>OpenHandCursor</cursorShape>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: #2176ae;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    border-radius: 14px;
+    padding: 18px 10px 8px 10px;
+    border: none;</string>
+   </property>
+   <property name="text">
+    <string>ENSAYO 
+ELECTRO-LUMINISCENCIA
+Electroluminescence Test</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="bntIV">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>180</y>
+     <width>171</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <property name="cursor">
+    <cursorShape>OpenHandCursor</cursorShape>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: #2176ae;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    border-radius: 14px;
+    padding: 18px 10px 8px 10px;
+    border: none;</string>
+   </property>
+   <property name="text">
+    <string>INSPECCION VISUAL
+Visual Inspection</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="bntVolver">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>290</y>
+     <width>101</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="cursor">
+    <cursorShape>OpenHandCursor</cursorShape>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">   background-color: #2176ae;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    border-radius: 8px;
+    padding: 8px 28px;
+    border: none;
+    text-align: left;</string>
+   </property>
+   <property name="text">
+    <string>Volver 
+Back</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
