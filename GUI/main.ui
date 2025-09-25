@@ -181,7 +181,7 @@ Start</string>
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>../maquina_logo.png</pixmap>
+     <pixmap>../Logos/maquina_logo.png</pixmap>
     </property>
     <property name="scaledContents">
      <bool>true</bool>

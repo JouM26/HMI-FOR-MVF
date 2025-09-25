@@ -51,22 +51,18 @@ class VentanaControlManual(QDialog):
         self.ui = uic.loadUi("GUI/ControlManual.ui", self)
         self.ui.btnVolver.clicked.connect(self.volver)
 
-        # Filtros de la cámara
+        # --- Filtros de la cámara con ComboBox ---
         self.filtros = ["Visual", "Infrarrojo", "Electroluminiscencia"]
-        self.filtro_actual = 0
-
-        # Mostrar filtro inicial
-        self.ui.txtFiltros.setText(self.filtros[self.filtro_actual])
-
-        # Conectar botones de filtro
-        self.ui.btnFiltros_I.clicked.connect(self.filtro_izquierda)
-        self.ui.btnFiltros_D.clicked.connect(self.filtro_derecha)
+        self.ui.cmbFiltros.clear()
+        self.ui.cmbFiltros.addItems(self.filtros)
+        self.ui.cmbFiltros.setCurrentIndex(0)
+        self.ui.cmbFiltros.currentIndexChanged.connect(self.cambiar_filtro)
 
         # Conectar botón de cámara (simulado)
         self.ui.btnCamara.clicked.connect(self.tomar_captura)
 
-        # Mostrar imagen de ejemplo al iniciar
-        self.mostrar_imagen_camara("GUI/ejemplo.jpg")
+        # Al iniciar, NO mostrar imagen
+        self.ui.lblCamara.clear()
 
         # --- Botones de los ejes ---
         self.valor_x = 0.0
@@ -92,24 +88,17 @@ class VentanaControlManual(QDialog):
         if self.ventana_anterior:
             self.ventana_anterior.show()
 
-    # Métodos para los filtros
-    def filtro_izquierda(self):
-        self.filtro_actual = (self.filtro_actual - 1) % len(self.filtros)
-        self.ui.txtFiltros.setText(self.filtros[self.filtro_actual])
-
-    def filtro_derecha(self):
-        self.filtro_actual = (self.filtro_actual + 1) % len(self.filtros)
-        self.ui.txtFiltros.setText(self.filtros[self.filtro_actual])
+    def cambiar_filtro(self, index):
+        filtro = self.filtros[index]
+        print(f"Filtro seleccionado: {filtro}")
+        # Aquí puedes cambiar la imagen o lógica según el filtro seleccionado
 
     def tomar_captura(self):
-        pix = QPixmap("GUI/Panel_Visual.png")
-        self.ui.lblCamara.setPixmap(pix.scaled(
-            self.ui.lblCamara.width(),
-            self.ui.lblCamara.height()
-        ))
+        self.ui.lblCamara.clear()
+        QTimer.singleShot(200, self.mostrar_imagen_panel)
 
-    def mostrar_imagen_camara(self, ruta_imagen):
-        pix = QPixmap(ruta_imagen)
+    def mostrar_imagen_panel(self):
+        pix = QPixmap("Logos/Panel_Visual.png")
         self.ui.lblCamara.setPixmap(pix.scaled(
             self.ui.lblCamara.width(),
             self.ui.lblCamara.height()
